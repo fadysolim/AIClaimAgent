@@ -81,10 +81,10 @@ export type InsertCostEstimation = z.infer<typeof insertCostEstimationSchema>;
 export type CostEstimation = typeof costEstimations.$inferSelect;
 export type InsertUploadedImage = z.infer<typeof insertUploadedImageSchema>;
 export type UploadedImage = typeof uploadedImages.$inferSelect;
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
-
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
 });
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;

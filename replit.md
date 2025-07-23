@@ -95,10 +95,34 @@ Preferred communication style: Simple, everyday language.
 - Development vs production mode switching
 - Replit-specific plugins for development environment
 
+## Recent Changes (January 2025)
+
+### Two-Screen Workflow Implementation
+- **Claims List Page**: New home page showing claims overview with search, filtering, and statistics
+- **Enhanced Claims Dashboard**: Improved second screen for detailed claim assessment
+- **Navigation**: Implemented proper routing between claims list and individual claim details
+
+### Enhanced Image Management
+- **Image Gallery**: Added display of actual vehicle damage photos (Honda Accord samples)
+- **Image Viewer**: Full-screen modal viewer with zoom, rotation, and navigation controls
+- **Upload Workflow**: Enhanced upload interface with visual feedback and progress tracking
+
+### AI Assistant Integration
+- **Intelligent Analysis**: Comprehensive AI assistant with damage assessment insights
+- **Cost Estimation**: Detailed repair cost breakdowns with confidence ranges
+- **Action Recommendations**: Context-aware suggested next steps for claims agents
+- **Database Integration**: References to repair cost databases and OEM parts catalogs
+
+### User Experience Improvements
+- **Progress Tracking**: Visual workflow indicators for claim status progression
+- **Professional Interface**: Insurance industry-standard design with SecureGuard branding
+- **Responsive Layout**: Optimized for desktop claims processing workflows
+- **Interactive Elements**: Hover effects, transitions, and intuitive navigation
+
 ### Current Limitations
 - Using in-memory storage (MemStorage) instead of actual database
-- AI functionality is mocked/simulated
+- AI functionality is mocked/simulated with realistic sample data
 - No authentication system implemented yet
-- Image storage is handled via base64 encoding rather than file system
+- Image storage handled via imported assets rather than dynamic uploads
 
-The architecture is designed to be easily extensible, with clear separation between frontend, backend, and data layers. The use of TypeScript throughout ensures type safety, while the component-based React architecture allows for easy UI modifications and extensions.
+The architecture now supports a complete claims processing workflow from initial review through AI-assisted damage assessment to final approval, designed to demonstrate modern insurance technology capabilities.

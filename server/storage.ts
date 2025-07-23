@@ -95,6 +95,7 @@ export class MemStorage implements IStorage {
     const claim: Claim = {
       ...insertClaim,
       id,
+      status: insertClaim.status || "initiated",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -122,6 +123,7 @@ export class MemStorage implements IStorage {
     const assessment: DamageAssessment = {
       ...insertAssessment,
       id,
+      analysisComplete: insertAssessment.analysisComplete || false,
       createdAt: new Date(),
     };
     this.damageAssessments.set(id, assessment);

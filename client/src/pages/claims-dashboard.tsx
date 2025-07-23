@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ImageViewer } from "@/components/image-viewer";
+import { AIAssistant } from "@/components/ai-assistant";
 import { 
   Shield, 
   User, 
@@ -27,15 +29,30 @@ import {
   CheckCircle2,
   Eye,
   Save,
-  AlertCircle
+  AlertCircle,
+  ArrowLeft,
+  Play,
+  Pause,
+  Volume2
 } from "lucide-react";
 import type { Claim, DamageAssessment, CostEstimation, UploadedImage } from "@shared/schema";
+
+// Import attached assets
+import hondaFrontImage from "@assets/honda 1_1753312505279.jpg";
+import hondaBackImage from "@assets/honda back_1753312505278.jpg";
 
 export default function ClaimsDashboard() {
   const params = useParams();
   const claimId = parseInt(params.id || "1");
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<{ src: string; title: string } | null>(null);
+
+  // Sample images for the prototype
+  const sampleImages = [
+    { src: hondaFrontImage, title: "Front Damage - Honda Accord", filename: "honda_front_damage.jpg" },
+    { src: hondaBackImage, title: "Rear Damage - Honda Accord", filename: "honda_rear_damage.jpg" },
+  ];
 
   // Fetch claim data
   const { data: claim, isLoading: claimLoading } = useQuery<Claim>({
@@ -131,14 +148,19 @@ export default function ClaimsDashboard() {
   });
 
   const handleFileUpload = () => {
-    // Simulate file upload
-    const sampleFiles = [
-      { filename: "front_damage_001.jpg", fileSize: "2.4 MB" },
-      { filename: "side_damage_002.jpg", fileSize: "1.8 MB" }
-    ];
-    
-    const randomFile = sampleFiles[Math.floor(Math.random() * sampleFiles.length)];
-    uploadImageMutation.mutate(randomFile);
+    // For the prototype, upload one of the provided images
+    const imageToUpload = sampleImages[Math.floor(Math.random() * sampleImages.length)];
+    uploadImageMutation.mutate({
+      filename: imageToUpload.filename,
+      fileSize: "2.4 MB"
+    });
+  };
+
+  const handleAIAction = (action: string) => {
+    toast({
+      title: "Action Triggered",
+      description: `AI Assistant action: ${action.replace('_', ' ')}`,
+    });
   };
 
   const handleAnalyze = () => {
@@ -227,9 +249,17 @@ export default function ClaimsDashboard() {
         <Card className="mb-8">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-2xl font-semibold text-gray-900">Damage Assessment</h2>
-                <p className="text-gray-600 mt-1">Claim #{claim.claimNumber}</p>
+              <div className="flex items-center space-x-4">
+                <Link href="/">
+                  <Button variant="ghost" size="sm">
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Claims
+                  </Button>
+                </Link>
+                <div>
+                  <h2 className="text-2xl font-semibold text-gray-900">Damage Assessment</h2>
+                  <p className="text-gray-600 mt-1">Claim #{claim.claimNumber}</p>
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <Badge variant="secondary" className="bg-blue-100 text-blue-800">
@@ -323,9 +353,36 @@ export default function ClaimsDashboard() {
                 </div>
               </div>
 
+              {/* Sample Images Gallery */}
+              <div className="mt-6">
+                <h4 className="text-sm font-medium text-gray-900 mb-3">Damage Photos</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  {sampleImages.map((img, index) => (
+                    <div 
+                      key={index} 
+                      className="relative group cursor-pointer rounded-lg overflow-hidden bg-gray-100"
+                      onClick={() => setSelectedImage({ src: img.src, title: img.title })}
+                    >
+                      <img
+                        src={img.src}
+                        alt={img.title}
+                        className="w-full h-32 object-cover group-hover:scale-105 transition-transform duration-200"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-200 flex items-center justify-center">
+                        <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                      </div>
+                      <div className="absolute bottom-2 left-2 right-2">
+                        <p className="text-xs text-white font-medium drop-shadow-md">{img.title}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               {/* Uploaded Images */}
               {images.length > 0 && (
                 <div className="mt-6 space-y-3">
+                  <h4 className="text-sm font-medium text-gray-900">Recently Uploaded</h4>
                   {images.map((image) => (
                     <div key={image.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center space-x-3">
@@ -374,84 +431,12 @@ export default function ClaimsDashboard() {
             </CardContent>
           </Card>
 
-          {/* AI Analysis */}
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                <Brain className="mr-2 text-primary w-5 h-5" />
-                AI Damage Analysis
-              </h3>
-
-              {/* Loading State */}
-              {(isAnalyzing || analyzeMutation.isPending) && (
-                <div className="text-center py-8">
-                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                  </div>
-                  <p className="text-gray-600">Analyzing damage patterns...</p>
-                  <p className="text-sm text-gray-500 mt-1">This may take a few moments</p>
-                </div>
-              )}
-
-              {/* Results */}
-              {assessment && !isAnalyzing && !analyzeMutation.isPending && (
-                <div className="space-y-4">
-                  {/* Confidence Score */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-green-800">Analysis Confidence</span>
-                      <span className="text-sm font-bold text-green-700">{assessment.confidence}%</span>
-                    </div>
-                    <Progress value={assessment.confidence} className="h-2" />
-                  </div>
-
-                  {/* Detected Damage */}
-                  <div>
-                    <h4 className="text-sm font-semibold text-gray-900 mb-3">Detected Damage</h4>
-                    <div className="space-y-3">
-                      {(assessment.damageItems as any[]).map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
-                              {getSeverityIcon(item.severity)}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-gray-900">{item.type}</p>
-                              <p className="text-xs text-gray-500">{item.severity} severity • {item.location}</p>
-                            </div>
-                          </div>
-                          <Badge className={getSeverityColor(item.severity)}>
-                            {item.severity}
-                          </Badge>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* AI Recommendations */}
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <h4 className="text-sm font-semibold text-blue-900 mb-2 flex items-center">
-                      <Lightbulb className="w-4 h-4 mr-2" />
-                      AI Recommendations
-                    </h4>
-                    <ul className="text-sm text-blue-800 space-y-1">
-                      {assessment.recommendations.map((rec, index) => (
-                        <li key={index}>• {rec}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              )}
-
-              {/* Empty State */}
-              {!assessment && !isAnalyzing && !analyzeMutation.isPending && (
-                <div className="text-center py-8 text-gray-500">
-                  <Brain className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>Upload images and click analyze to see AI damage assessment</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+          {/* AI Assistant */}
+          <AIAssistant 
+            assessment={assessment} 
+            estimation={estimation} 
+            onAction={handleAIAction} 
+          />
         </div>
 
         {/* Cost Estimation */}
@@ -600,6 +585,16 @@ export default function ClaimsDashboard() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Image Viewer Modal */}
+        {selectedImage && (
+          <ImageViewer
+            isOpen={!!selectedImage}
+            onClose={() => setSelectedImage(null)}
+            imageSrc={selectedImage.src}
+            imageTitle={selectedImage.title}
+          />
+        )}
       </div>
     </div>
   );

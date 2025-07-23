@@ -5,6 +5,51 @@ import { insertDamageAssessmentSchema, insertCostEstimationSchema, insertUploade
 
 export async function registerRoutes(app: Express): Promise<Server> {
   
+  // Get all claims
+  app.get("/api/claims", async (req, res) => {
+    try {
+      // For demo purposes, return sample claims
+      const sampleClaims = [
+        {
+          id: 1,
+          claimNumber: "CLM-2024-001537",
+          policyholder: "Michael Chen",
+          policyNumber: "POL-789456123",
+          vehicle: "2021 Honda Accord",
+          status: "in_progress",
+          agentName: "Sarah Johnson",
+          createdAt: new Date("2024-01-15"),
+          updatedAt: new Date("2024-01-20"),
+        },
+        {
+          id: 2,
+          claimNumber: "CLM-2024-001523",
+          policyholder: "Emma Rodriguez",
+          policyNumber: "POL-654321987",
+          vehicle: "2020 Toyota Camry",
+          status: "approved",
+          agentName: "Sarah Johnson",
+          createdAt: new Date("2024-01-12"),
+          updatedAt: new Date("2024-01-18"),
+        },
+        {
+          id: 3,
+          claimNumber: "CLM-2024-001498",
+          policyholder: "David Kim",
+          policyNumber: "POL-111222333",
+          vehicle: "2019 BMW 320i",
+          status: "reviewed",
+          agentName: "Sarah Johnson",
+          createdAt: new Date("2024-01-08"),
+          updatedAt: new Date("2024-01-15"),
+        }
+      ];
+      res.json(sampleClaims);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get claims" });
+    }
+  });
+
   // Get claim by ID
   app.get("/api/claims/:id", async (req, res) => {
     try {
