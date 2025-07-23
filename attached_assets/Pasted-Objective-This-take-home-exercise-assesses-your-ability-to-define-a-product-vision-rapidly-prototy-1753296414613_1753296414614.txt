@@ -1,0 +1,51 @@
+Objective 
+This take-home exercise assesses your ability to define a product vision, rapidly prototype a 
+solution using AI coding tools, and document it effectively. We want to see your ability to 
+leverage emerging technologies to build and communicate product ideas. 
+Scenario 
+We are working with a leading car insurance company to help them assess damage to cars as 
+part of the claims process.  
+Your task is to design and build a basic prototype of an AI-powered car insurance claims 
+experience that increases efficiency and accuracy at a lower cost to the insurance company.  
+Existing workflow 
+Assume this happens before our solution 
+●  Initial Claim Report: 
+○  Policyholder contacts the insurance company (phone, website, app) to report an 
+accident. 
+○  A claims agent gathers basic information (policy number, accident details, etc.). 
+●  Damage Documentation: 
+○  Policyholder is instructed to submit photos or videos of the vehicle damage. 
+This is the flow we want to automate 
+●  Manual Review and Assessment: 
+○  Claims agents manually review the submitted photos/videos. 
+○  They assess the extent of the damage (scratches, dents, structural damage). 
+○  They use their experience and knowledge to estimate repair costs. 
+○  They sometimes consult standardized repair cost databases or manuals. 
+●  Estimate Generation: 
+○  The claims agent generates a detailed estimate of the repair costs. 
+●  Approval and Authorization: 
+○  The estimate is reviewed and approved by a senior claims adjuster. 
+○  Authorization is given to proceed with repairs at an approved repair shop. 
+Assume this happens after our solution 
+●  Repair Process: 
+○  Policyholder takes the vehicle to the repair shop. 
+○  The repair shop may conduct its own assessment and provide an estimate. 
+○  The repair shop and the insurance company will negotiate the final price. 
+●  Final Inspection: 
+○  After repairs are completed, a final inspection may be conducted to ensure 
+quality. 
+○  The claim is then closed. 
+Your task 
+1.  Prototype 
+○  Using an AI coding tool (e.g., Replit, Lovable, Cursor, v0, Bolt.new), create a 
+functional prototype demonstrating the core user flow for a claims agent. 
+○  The prototype should include: 
+■  A basic user interface for initiating a claim. 
+■  Functionality to upload an image of the vehicle damage. 
+■  A simulated (AI-generated) response, such as a preliminary damage 
+assessment or next steps. 
+■  While complete AI functionality is not required, the prototype should 
+demonstrate how AI could be integrated into the claims process. 
+○  You can mock the AI response if you’d like but make sure to describe the 
+approach you would take in the PRD.  
+○  Provide a link to a Github repo of the prototype as well as a recorded demo.
