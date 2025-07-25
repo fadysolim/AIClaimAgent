@@ -117,32 +117,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Simulate AI processing delay
       await new Promise(resolve => setTimeout(resolve, 3000));
       
-      // Create simulated AI damage assessment
+      // Create simulated AI damage assessment for front right side damage
       const damageItems = [
         {
-          type: "Front Bumper Dent",
+          type: "Front Right Headlight Housing",
+          severity: "Severe",
+          location: "Right front headlight assembly",
+          confidence: 0.97
+        },
+        {
+          type: "Front Right Body Panel", 
           severity: "Moderate",
-          location: "Left side",
-          confidence: 0.92
+          location: "Right front quarter panel",
+          confidence: 0.94
         },
         {
-          type: "Paint Scratches", 
-          severity: "Minor",
-          location: "Multiple locations",
-          confidence: 0.88
-        },
-        {
-          type: "Headlight Damage",
-          severity: "Moderate", 
-          location: "Left headlight",
-          confidence: 0.95
+          type: "Front Bumper Corner",
+          severity: "Minor", 
+          location: "Right front bumper corner",
+          confidence: 0.89
         }
       ];
 
       const recommendations = [
-        "Recommend professional body shop assessment",
-        "Consider OEM parts for headlight replacement", 
-        "Paint matching required for optimal results"
+        "Replace right front headlight assembly with OEM parts",
+        "Professional body panel repair and paint matching required", 
+        "Minor bumper corner repair can be completed with existing work"
       ];
 
       const validatedAssessment = insertDamageAssessmentSchema.parse({
@@ -155,17 +155,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const assessment = await storage.createDamageAssessment(validatedAssessment);
 
-      // Create cost estimation
+      // Create cost estimation for front right side damage
       const validatedEstimation = insertCostEstimationSchema.parse({
         claimId,
-        bumperRepair: 485,
-        paintwork: 320,
-        headlight: 275,
-        miscellaneous: 95,
-        total: 1175,
-        lowEstimate: 1050,
-        highEstimate: 1300,
-        completionTime: "3-5 business days"
+        bumperRepair: 320,
+        paintwork: 650,
+        headlight: 480,
+        miscellaneous: 150,
+        total: 1600,
+        lowEstimate: 1450,
+        highEstimate: 1750,
+        completionTime: "4-6 business days"
       });
 
       const estimation = await storage.createCostEstimation(validatedEstimation);

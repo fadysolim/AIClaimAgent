@@ -33,13 +33,14 @@ import {
   ArrowLeft,
   Play,
   Pause,
-  Volume2
+  Volume2,
+  FileText
 } from "lucide-react";
 import type { Claim, DamageAssessment, CostEstimation, UploadedImage } from "@shared/schema";
 
 // Import attached assets
-import hondaFrontImage from "@assets/honda 1_1753312505279.jpg";
-import hondaBackImage from "@assets/honda back_1753312505278.jpg";
+import hondaFrontImage from "@assets/honda front new_1753478515810.webp";
+import hondaBackImage from "@assets/honda new 2_1753478515819.jpg";
 
 export default function ClaimsDashboard() {
   const params = useParams();
@@ -50,8 +51,8 @@ export default function ClaimsDashboard() {
 
   // Sample images for the prototype
   const sampleImages = [
-    { src: hondaFrontImage, title: "Front Damage - Honda Accord", filename: "honda_front_damage.jpg" },
-    { src: hondaBackImage, title: "Rear Damage - Honda Accord", filename: "honda_rear_damage.jpg" },
+    { src: hondaFrontImage, title: "Front Right Side Damage - Honda Accord", filename: "honda_front_damage.webp" },
+    { src: hondaBackImage, title: "Vehicle Overview - Honda Accord", filename: "honda_overview.jpg" },
   ];
 
   // Fetch claim data
@@ -461,34 +462,34 @@ export default function ClaimsDashboard() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Front Bumper Repair</p>
-                        <p className="text-xs text-gray-500">Labor + Materials</p>
+                        <p className="text-sm font-medium text-gray-900">Bumper Corner Repair</p>
+                        <p className="text-xs text-gray-500">Minor impact repair</p>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">${estimation.bumperRepair}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Paint Touch-up</p>
-                        <p className="text-xs text-gray-500">Color matching + Application</p>
+                        <p className="text-sm font-medium text-gray-900">Body Panel & Paint</p>
+                        <p className="text-xs text-gray-500">Panel repair + color matching</p>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">${estimation.paintwork}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Headlight Replacement</p>
-                        <p className="text-xs text-gray-500">OEM Part + Installation</p>
+                        <p className="text-sm font-medium text-gray-900">Headlight Assembly</p>
+                        <p className="text-xs text-gray-500">OEM replacement + installation</p>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">${estimation.headlight}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
-                        <p className="text-sm font-medium text-gray-900">Miscellaneous</p>
-                        <p className="text-xs text-gray-500">Shop supplies, fees</p>
+                        <p className="text-sm font-medium text-gray-900">Labor & Miscellaneous</p>
+                        <p className="text-xs text-gray-500">Shop supplies, labor fees</p>
                       </div>
-                      <span className="text-sm font-semibred text-gray-900">${estimation.miscellaneous}</span>
+                      <span className="text-sm font-semibold text-gray-900">${estimation.miscellaneous}</span>
                     </div>
 
                     {/* Total */}
@@ -547,24 +548,36 @@ export default function ClaimsDashboard() {
         {/* Actions */}
         <Card className="mt-8">
           <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Steps</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Review & Submit</h3>
+            
+            {/* PDF Review Button */}
+            <div className="mb-6">
+              <Button 
+                variant="outline"
+                className="w-full border-primary text-primary hover:bg-primary hover:text-white"
+                onClick={() => {
+                  toast({
+                    title: "Generating Report",
+                    description: "PDF report with all claim details is being prepared...",
+                  });
+                }}
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Review Complete Assessment Report (PDF)
+              </Button>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                View comprehensive report including AI analysis, cost estimates, and recommendations
+              </p>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4">
               <Button 
                 className="flex-1 bg-primary hover:bg-primary/90"
-                onClick={() => updateClaimMutation.mutate("approved")}
-                disabled={updateClaimMutation.isPending}
-              >
-                <Check className="w-4 h-4 mr-2" />
-                Approve Estimate
-              </Button>
-              <Button 
-                variant="secondary"
-                className="flex-1"
-                onClick={() => updateClaimMutation.mutate("under_review")}
+                onClick={() => updateClaimMutation.mutate("pending_approval")}
                 disabled={updateClaimMutation.isPending}
               >
                 <Eye className="w-4 h-4 mr-2" />
-                Request Senior Review
+                Send for Senior Approval
               </Button>
               <Button 
                 variant="outline"

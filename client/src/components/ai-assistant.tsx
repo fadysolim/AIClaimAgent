@@ -105,19 +105,19 @@ export function AIAssistant({ assessment, estimation, onAction }: AIAssistantPro
           </h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
-              <span className="text-gray-600">Bumper Repair</span>
+              <span className="text-gray-600">Bumper Corner Repair</span>
               <span className="font-medium">${estimation.bumperRepair}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Paintwork</span>
+              <span className="text-gray-600">Body Panel & Paint</span>
               <span className="font-medium">${estimation.paintwork}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Headlight Replacement</span>
+              <span className="text-gray-600">Headlight Assembly</span>
               <span className="font-medium">${estimation.headlight}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-gray-600">Miscellaneous</span>
+              <span className="text-gray-600">Labor & Miscellaneous</span>
               <span className="font-medium">${estimation.miscellaneous}</span>
             </div>
             <Separator />
