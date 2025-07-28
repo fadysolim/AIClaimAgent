@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ImageViewer } from "@/components/image-viewer";
 import { AIAssistant } from "@/components/ai-assistant";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Shield, 
   User, 
@@ -34,7 +36,12 @@ import {
   Play,
   Pause,
   Volume2,
-  FileText
+  FileText,
+  Search,
+  Plus,
+  ThumbsUp,
+  ThumbsDown,
+  Bot
 } from "lucide-react";
 import type { Claim, DamageAssessment, CostEstimation, UploadedImage } from "@shared/schema";
 
@@ -48,6 +55,86 @@ export default function ClaimsDashboard() {
   const { toast } = useToast();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [selectedImage, setSelectedImage] = useState<{ src: string; title: string } | null>(null);
+  const [damageReviewState, setDamageReviewState] = useState<{[key: string]: 'accepted' | 'rejected' | 'pending'}>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [customDamageItems, setCustomDamageItems] = useState<Array<{type: string; severity: string; location: string; cost: number}>>([]);
+
+  // Common damage types for search
+  const commonDamageTypes = [
+    { type: "Door Panel Dent", cost: 380 },
+    { type: "Rear Bumper Scrape", cost: 250 },
+    { type: "Mirror Replacement", cost: 180 },
+    { type: "Windshield Crack", cost: 425 },
+    { type: "Tire Replacement", cost: 200 },
+    { type: "Rim Damage", cost: 350 },
+    { type: "Trunk Lid Dent", cost: 450 },
+    { type: "Hood Scratches", cost: 320 },
+    { type: "Tail Light Crack", cost: 150 }
+  ];
+
+  const filteredDamageTypes = commonDamageTypes.filter(item =>
+    item.type.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Handle damage item acceptance/rejection
+  const handleDamageReview = (itemType: string, action: 'accepted' | 'rejected') => {
+    setDamageReviewState(prev => ({
+      ...prev,
+      [itemType]: action
+    }));
+    
+    toast({
+      title: action === 'accepted' ? "Item Accepted" : "Item Rejected",
+      description: `${itemType} has been ${action}`,
+    });
+  };
+
+  // Add custom damage item
+  const addCustomDamageItem = (type: string, cost: number) => {
+    const newItem = {
+      type,
+      severity: "Moderate",
+      location: "To be specified",
+      cost
+    };
+    
+    setCustomDamageItems(prev => [...prev, newItem]);
+    setSearchTerm("");
+    
+    toast({
+      title: "Damage Item Added",
+      description: `${type} added to assessment`,
+    });
+  };
+
+  // Calculate updated total cost
+  const getUpdatedCost = (originalEstimation: CostEstimation) => {
+    if (!assessment || !assessment.damageItems) return originalEstimation;
+    
+    const damageItems = assessment.damageItems as Array<{type: string; severity: string; location: string; confidence: number}>;
+    const acceptedItems = damageItems.filter((item: any) => 
+      damageReviewState[item.type] !== 'rejected'
+    );
+    
+    const customItemsCost = customDamageItems.reduce((sum, item) => sum + item.cost, 0);
+    const rejectedItemsCount = damageItems.filter((item: any) => 
+      damageReviewState[item.type] === 'rejected'
+    ).length;
+    
+    // Estimate reduction for rejected items (rough calculation)
+    const rejectionReduction = rejectedItemsCount * 200;
+    const newTotal = Math.max(
+      originalEstimation.total - rejectionReduction + customItemsCost,
+      0
+    );
+    
+    return {
+      ...originalEstimation,
+      total: newTotal,
+      lowEstimate: Math.round(newTotal * 0.9),
+      highEstimate: Math.round(newTotal * 1.1)
+    };
+  };
 
   // Sample images for the prototype
   const sampleImages = [
@@ -158,10 +245,37 @@ export default function ClaimsDashboard() {
   };
 
   const handleAIAction = (action: string) => {
-    toast({
-      title: "Action Triggered",
-      description: `AI Assistant action: ${action.replace('_', ' ')}`,
-    });
+    switch (action) {
+      case 'schedule_inspection':
+        toast({
+          title: "Inspection Scheduled",
+          description: "In-person inspection scheduled for next business day.",
+        });
+        break;
+      case 'request_additional_photos':
+        toast({
+          title: "Photo Request Sent",
+          description: "Additional photo request sent to policyholder via SMS and email.",
+        });
+        break;
+      case 'get_shop_estimates':
+        toast({
+          title: "Shop Estimates Retrieved",
+          description: "Estimates from certified repair shops have been requested.",
+        });
+        break;
+      case 'consult_databases':
+        toast({
+          title: "Database Consultation Complete",
+          description: "AI consulted Mitchell RepairCenter, CCC Database, and OEM parts catalogs for accurate cost estimates.",
+        });
+        break;
+      default:
+        toast({
+          title: "Action Triggered",
+          description: `AI Assistant action: ${action.replace('_', ' ')}`,
+        });
+    }
   };
 
   const handleAnalyze = () => {
@@ -416,23 +530,177 @@ export default function ClaimsDashboard() {
                 </div>
               )}
 
-              {/* Analyze Button */}
-              <Button 
-                className="w-full mt-6 bg-primary hover:bg-primary/90"
-                onClick={handleAnalyze}
-                disabled={isAnalyzing || analyzeMutation.isPending || images.length === 0}
-              >
-                {isAnalyzing || analyzeMutation.isPending ? (
-                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
-                ) : (
-                  <Brain className="w-4 h-4 mr-2" />
-                )}
-                Analyze Damage with AI
-              </Button>
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-3">
+                <Button 
+                  className="w-full bg-primary hover:bg-primary/90"
+                  onClick={handleAnalyze}
+                  disabled={isAnalyzing || analyzeMutation.isPending || images.length === 0}
+                >
+                  {isAnalyzing || analyzeMutation.isPending ? (
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  ) : (
+                    <Brain className="w-4 h-4 mr-2" />
+                  )}
+                  Analyze Damage with AI
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  className="w-full border-blue-500 text-blue-600 hover:bg-blue-50"
+                  onClick={() => {
+                    toast({
+                      title: "Image Request Sent",
+                      description: "Request for additional photos sent to policyholder via SMS and email.",
+                    });
+                  }}
+                >
+                  <ImageIcon className="w-4 h-4 mr-2" />
+                  Request Additional Images from Policyholder
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
-          {/* AI Assistant */}
+          {/* AI Assistant with Agent Review */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                <Brain className="mr-2 text-primary w-5 h-5" />
+                Agent Review & Override
+              </h3>
+              
+              {assessment && assessment.damageItems ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Review AI damage detection and modify as needed. Changes will automatically update cost estimates.
+                  </p>
+                  
+                  {/* AI Assessment Items with Review */}
+                  <div className="space-y-3">
+                    {(assessment.damageItems as any[]).map((item, index) => (
+                      <div key={index} className={`p-3 rounded-lg border-2 transition-colors ${
+                        damageReviewState[item.type] === 'accepted' ? 'bg-green-50 border-green-200' :
+                        damageReviewState[item.type] === 'rejected' ? 'bg-red-50 border-red-200' :
+                        'bg-gray-50 border-gray-200'
+                      }`}>
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <h5 className="text-sm font-medium text-gray-900">{item.type}</h5>
+                              <Badge 
+                                variant={item.severity === "Severe" ? "destructive" : item.severity === "Moderate" ? "default" : "secondary"}
+                                className="text-xs"
+                              >
+                                {item.severity}
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">{item.location}</p>
+                            <div className="flex items-center mb-3">
+                              <div className="w-16 bg-gray-200 rounded-full h-1.5 mr-2">
+                                <div 
+                                  className="bg-primary h-1.5 rounded-full" 
+                                  style={{ width: `${item.confidence * 100}%` }}
+                                ></div>
+                              </div>
+                              <span className="text-xs text-gray-500">{Math.round(item.confidence * 100)}% confidence</span>
+                            </div>
+                            
+                            {/* Review Actions */}
+                            <div className="flex items-center space-x-2">
+                              <Button
+                                size="sm"
+                                variant={damageReviewState[item.type] === 'accepted' ? "default" : "outline"}
+                                onClick={() => handleDamageReview(item.type, 'accepted')}
+                                className="text-xs px-2 py-1 h-auto"
+                              >
+                                <ThumbsUp className="w-3 h-3 mr-1" />
+                                Accept
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant={damageReviewState[item.type] === 'rejected' ? "destructive" : "outline"}
+                                onClick={() => handleDamageReview(item.type, 'rejected')}
+                                className="text-xs px-2 py-1 h-auto"
+                              >
+                                <ThumbsDown className="w-3 h-3 mr-1" />
+                                Reject
+                              </Button>
+                              {damageReviewState[item.type] && (
+                                <span className="text-xs font-medium text-gray-600">
+                                  ✓ {damageReviewState[item.type]}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Custom damage items */}
+                    {customDamageItems.map((item, index) => (
+                      <div key={`custom-${index}`} className="p-3 bg-blue-50 border-2 border-blue-200 rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center justify-between mb-1">
+                              <h5 className="text-sm font-medium text-gray-900">{item.type}</h5>
+                              <Badge variant="outline" className="text-xs">
+                                Agent Added
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-gray-600 mb-2">{item.location}</p>
+                            <p className="text-xs text-blue-600 font-medium">Est. Cost: ${item.cost}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* Add missing damage items */}
+                    <div className="p-3 bg-yellow-50 border-2 border-yellow-200 rounded-lg">
+                      <h5 className="text-sm font-medium text-gray-900 mb-3">Search & Add Missing Damage</h5>
+                      <div className="space-y-3">
+                        <div className="flex space-x-2">
+                          <div className="flex-1 relative">
+                            <Search className="absolute left-2 top-2 h-4 w-4 text-gray-400" />
+                            <Input
+                              placeholder="Search for damage type..."
+                              value={searchTerm}
+                              onChange={(e) => setSearchTerm(e.target.value)}
+                              className="pl-8"
+                            />
+                          </div>
+                        </div>
+                        
+                        {searchTerm && filteredDamageTypes.length > 0 && (
+                          <div className="max-h-32 overflow-y-auto space-y-1">
+                            {filteredDamageTypes.slice(0, 5).map((damageType, index) => (
+                              <div key={index} 
+                                className="flex items-center justify-between p-2 bg-white border rounded cursor-pointer hover:bg-gray-50"
+                                onClick={() => addCustomDamageItem(damageType.type, damageType.cost)}
+                              >
+                                <span className="text-sm text-gray-900">{damageType.type}</span>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-xs text-gray-500">~${damageType.cost}</span>
+                                  <Plus className="w-3 h-3 text-gray-400" />
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Brain className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">Upload images and run analysis to review AI assessment</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Original AI Assistant */}
           <AIAssistant 
             assessment={assessment} 
             estimation={estimation} 
@@ -440,19 +708,26 @@ export default function ClaimsDashboard() {
           />
         </div>
 
-        {/* Cost Estimation */}
+        {/* Cost Estimation with Agent Review */}
         {estimation && (
           <Card className="mt-8">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Calculator className="mr-2 text-primary w-5 h-5" />
-                  Repair Cost Estimation
+                  Repair Cost Estimation - Agent Review
                 </h3>
-                <Badge className="bg-green-100 text-green-800">
-                  <CheckCircle2 className="w-3 h-3 mr-1" />
-                  AI Generated
-                </Badge>
+                <div className="flex items-center space-x-2">
+                  <Badge className="bg-green-100 text-green-800">
+                    <CheckCircle2 className="w-3 h-3 mr-1" />
+                    AI Generated
+                  </Badge>
+                  {(Object.keys(damageReviewState).length > 0 || customDamageItems.length > 0) && (
+                    <Badge className="bg-blue-100 text-blue-800">
+                      Agent Reviewed
+                    </Badge>
+                  )}
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -492,10 +767,28 @@ export default function ClaimsDashboard() {
                       <span className="text-sm font-semibold text-gray-900">${estimation.miscellaneous}</span>
                     </div>
 
+                    {/* Custom damage items */}
+                    {customDamageItems.map((item, index) => (
+                      <div key={`custom-cost-${index}`} className="flex items-center justify-between py-2 border-b border-blue-200 bg-blue-50 px-3 rounded">
+                        <div>
+                          <p className="text-sm font-medium text-blue-900">{item.type}</p>
+                          <p className="text-xs text-blue-600">Agent added</p>
+                        </div>
+                        <span className="text-sm font-semibold text-blue-900">+${item.cost}</span>
+                      </div>
+                    ))}
+
                     {/* Total */}
                     <div className="flex items-center justify-between py-3 pt-4 border-t-2 border-gray-200">
-                      <p className="text-base font-semibold text-gray-900">Total Estimated Cost</p>
-                      <span className="text-lg font-bold text-primary">${estimation.total}</span>
+                      <p className="text-base font-semibold text-gray-900">
+                        Total Estimated Cost
+                        {(Object.keys(damageReviewState).length > 0 || customDamageItems.length > 0) && (
+                          <span className="text-xs text-blue-600 block">Updated by agent</span>
+                        )}
+                      </p>
+                      <span className="text-lg font-bold text-primary">
+                        ${getUpdatedCost(estimation).total.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -508,11 +801,11 @@ export default function ClaimsDashboard() {
                       <h5 className="text-sm font-medium text-gray-900 mb-2">Confidence Range</h5>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">Low estimate:</span>
-                        <span className="font-medium">${estimation.lowEstimate}</span>
+                        <span className="font-medium">${getUpdatedCost(estimation).lowEstimate.toLocaleString()}</span>
                       </div>
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-600">High estimate:</span>
-                        <span className="font-medium">${estimation.highEstimate}</span>
+                        <span className="font-medium">${getUpdatedCost(estimation).highEstimate.toLocaleString()}</span>
                       </div>
                     </div>
 

@@ -11,7 +11,8 @@ import {
   ExternalLink,
   Wrench,
   DollarSign,
-  Clock
+  Clock,
+  Bot
 } from "lucide-react";
 import type { DamageAssessment, CostEstimation } from "@shared/schema";
 
@@ -74,24 +75,32 @@ export function AIAssistant({ assessment, estimation, onAction }: AIAssistantPro
           </div>
         </div>
 
-        {/* Damage Assessment */}
+        {/* AI Confidence Scoring */}
         <div>
           <h4 className="font-medium text-gray-900 mb-3 flex items-center">
             <AlertTriangle className="w-4 h-4 mr-2 text-orange-500" />
-            Damage Assessment
+            AI Confidence Scoring
           </h4>
           <div className="space-y-2">
             {damageItems.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div>
+              <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
                   <span className="font-medium text-gray-900">{item.type}</span>
-                  <div className="text-sm text-gray-600 mt-1">
-                    {item.location} • {item.severity} damage
-                  </div>
+                  <Badge 
+                    variant={item.confidence < 0.8 ? "destructive" : item.confidence < 0.9 ? "secondary" : "default"}
+                    className="text-xs"
+                  >
+                    {Math.round(item.confidence * 100)}% confident
+                  </Badge>
                 </div>
-                <Badge variant="outline" className="text-xs">
-                  {Math.round(item.confidence * 100)}% confident
-                </Badge>
+                <div className="text-sm text-gray-600">
+                  {item.location} • {item.severity} damage
+                </div>
+                {item.confidence < 0.85 && (
+                  <div className="mt-2 text-xs text-orange-600 bg-orange-50 p-2 rounded">
+                    ⚠️ Low confidence - Manual review recommended
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -154,6 +163,15 @@ export function AIAssistant({ assessment, estimation, onAction }: AIAssistantPro
             Suggested Actions
           </h4>
           <div className="grid grid-cols-1 gap-2">
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="justify-start border-purple-500 text-purple-600 hover:bg-purple-50"
+              onClick={() => onAction('consult_databases')}
+            >
+              <Bot className="w-4 h-4 mr-2" />
+              Consult Repair Cost Databases & Manuals
+            </Button>
             <Button 
               variant="outline" 
               size="sm" 
