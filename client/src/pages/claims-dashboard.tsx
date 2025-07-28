@@ -562,12 +562,12 @@ export default function ClaimsDashboard() {
             </CardContent>
           </Card>
 
-          {/* AI Assistant with Agent Review */}
+          {/* Claims AI Agent */}
           <Card>
             <CardContent className="p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                 <Brain className="mr-2 text-primary w-5 h-5" />
-                Agent Review & Override
+                Claims AI Agent
               </h3>
               
               {assessment && assessment.damageItems ? (
@@ -700,12 +700,7 @@ export default function ClaimsDashboard() {
             </CardContent>
           </Card>
 
-          {/* Original AI Assistant */}
-          <AIAssistant 
-            assessment={assessment} 
-            estimation={estimation} 
-            onAction={handleAIAction} 
-          />
+
         </div>
 
         {/* Cost Estimation with Agent Review */}
@@ -715,7 +710,7 @@ export default function ClaimsDashboard() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-gray-900 flex items-center">
                   <Calculator className="mr-2 text-primary w-5 h-5" />
-                  Repair Cost Estimation - Agent Review
+                  Repair Cost Estimation
                 </h3>
                 <div className="flex items-center space-x-2">
                   <Badge className="bg-green-100 text-green-800">
@@ -733,31 +728,43 @@ export default function ClaimsDashboard() {
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Cost Breakdown */}
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-900 mb-4">Cost Breakdown</h4>
+                  <h4 className="text-sm font-semibold text-gray-900 mb-4">
+                    Cost Breakdown 
+                    {(Object.keys(damageReviewState).length > 0 || customDamageItems.length > 0) && (
+                      <span className="text-blue-600 ml-2">(Updated by Agent)</span>
+                    )}
+                  </h4>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Bumper Corner Repair</p>
-                        <p className="text-xs text-gray-500">Minor impact repair</p>
+                    {/* Only show accepted or unreviewed items */}
+                    {damageReviewState["Front bumper corner damage"] !== 'rejected' && (
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Bumper Corner Repair</p>
+                          <p className="text-xs text-gray-500">Minor impact repair</p>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">${estimation.bumperRepair}</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">${estimation.bumperRepair}</span>
-                    </div>
+                    )}
 
-                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Body Panel & Paint</p>
-                        <p className="text-xs text-gray-500">Panel repair + color matching</p>
+                    {damageReviewState["Body panel scratches"] !== 'rejected' && (
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Body Panel & Paint</p>
+                          <p className="text-xs text-gray-500">Panel repair + color matching</p>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">${estimation.paintwork}</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">${estimation.paintwork}</span>
-                    </div>
+                    )}
 
-                    <div className="flex items-center justify-between py-3 border-b border-gray-100">
-                      <div>
-                        <p className="text-sm font-medium text-gray-900">Headlight Assembly</p>
-                        <p className="text-xs text-gray-500">OEM replacement + installation</p>
+                    {damageReviewState["Headlight housing crack"] !== 'rejected' && (
+                      <div className="flex items-center justify-between py-3 border-b border-gray-100">
+                        <div>
+                          <p className="text-sm font-medium text-gray-900">Headlight Assembly</p>
+                          <p className="text-xs text-gray-500">OEM replacement + installation</p>
+                        </div>
+                        <span className="text-sm font-semibold text-gray-900">${estimation.headlight}</span>
                       </div>
-                      <span className="text-sm font-semibold text-gray-900">${estimation.headlight}</span>
-                    </div>
+                    )}
 
                     <div className="flex items-center justify-between py-3 border-b border-gray-100">
                       <div>
@@ -883,12 +890,7 @@ export default function ClaimsDashboard() {
               </Button>
             </div>
             
-            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <p className="text-sm text-blue-800">
-                <AlertCircle className="w-4 h-4 mr-2 inline" />
-                <strong>AI Integration Note:</strong> This assessment was generated using computer vision AI trained on thousands of vehicle damage images. The system can detect damage types, severity levels, and provide cost estimates with 94% accuracy based on historical repair data.
-              </p>
-            </div>
+
           </CardContent>
         </Card>
 
@@ -901,6 +903,22 @@ export default function ClaimsDashboard() {
             imageTitle={selectedImage.title}
           />
         )}
+
+        {/* AI Chatbot Icon */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <Button
+            size="lg"
+            className="rounded-full w-14 h-14 bg-primary hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all duration-200"
+            onClick={() => {
+              toast({
+                title: "AI Assistant",
+                description: "AI chatbot feature coming soon!",
+              });
+            }}
+          >
+            <Brain className="w-6 h-6" />
+          </Button>
+        </div>
       </div>
     </div>
   );
